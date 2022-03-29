@@ -19,7 +19,7 @@ function getAllProducts() {
 
         /* Mise en place de l'attribut href qui pointe sur l'id du produit sur lequel
         l'utilisateur cliquera. */
-        productLink.setAttribute("href", `"./product.html?id=${product._id}`);
+        productLink.setAttribute("href", `./product.html?id=${product._id}`);
 
         /* Mise en place des attributs src et alt qui permettra d'afficher
         l'image de chaque produit et la description qui leur correspond. */
