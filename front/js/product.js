@@ -20,13 +20,15 @@ function getProduct() {
       const imageOfProduct = document.createElement("img");
       imageOfProduct.setAttribute("src", `${product.imageUrl}`);
       imageOfProduct.setAttribute("alt", `${product.altTxt}`);
-      document.getElementsByClassName("item__img").appendChild(imageOfProduct);
+      document
+        .getElementsByClassName("item__img")[0]
+        .appendChild(imageOfProduct);
 
       document.getElementById("title").textContent = product.name;
       document.getElementById("price").textContent = product.price;
       document.getElementById("description").textContent = product.description;
 
-      for (let color in product.colors) {
+      for (let color of product.colors) {
         const option = document.createElement("option");
         option.setAttribute("value", color);
         option.textContent = color;
