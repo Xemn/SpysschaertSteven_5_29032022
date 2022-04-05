@@ -40,4 +40,28 @@ function getProduct() {
     });
 }
 
+function addItemToCart() {
+  // On récupère dans le DOM notre button :
+  const buttonAddToCart = document.getElementById("addToCart");
+
+  /* Nous venons écouter le clique sur le boutton et lui donner une suite
+  d'instructions dans notre fonction callback : */
+  buttonAddToCart.addEventListener("click", function () {
+    // Nous récupérons notre select et input via leur id respectif :
+    let quantity = document.getElementById("quantity");
+    let color = document.getElementById("colors");
+
+    /* Never trust in User Input : On vérifie qu'une quantité correcte et une couleur 
+    aient été choisies : */
+
+    if (quantity.value > 0 && quantity.value < 100 && color.value != "") {
+      let item = {
+        id: id,
+        quantity: quantity.value,
+        color: color.value,
+      };
+    }
+  });
+}
+
 getProduct();
