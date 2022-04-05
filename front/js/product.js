@@ -48,20 +48,61 @@ function addItemToCart() {
   d'instructions dans notre fonction callback : */
   buttonAddToCart.addEventListener("click", function () {
     // Nous récupérons notre select et input via leur id respectif :
-    let quantity = document.getElementById("quantity");
-    let color = document.getElementById("colors");
+    let quantity = document.getElementById("quantity").value;
+    let color = document.getElementById("colors").value;
 
     /* Never trust in User Input : On vérifie qu'une quantité correcte et une couleur 
     aient été choisies : */
 
-    if (quantity.value > 0 && quantity.value < 100 && color.value != "") {
+    if (parseInt(quantity) > 0 && parseInt(quantity) < 100 && color != "") {
+      /* Création d'un objet item, qui aura pour propriétés, l'id correspondant
+        au canapé acheté, la quantité souhaité, et sa couleur :  */
       let item = {
-        id: id,
-        quantity: quantity.value,
-        color: color.value,
+        _id: id,
+        quantity: parseFloat(quantity),
+        color: color,
       };
+
+      // Création d'un tableau qui contiendra la liste de nos achats :
+      let cartOfItem = [];
+
+      /* Nous vérifions en premier lieu si notre localStorage contient déjà des
+      entrées et si c'est le cas nous les récupérons pour les inscrire dans notre
+      tableau cartOfItem : */
+      if (localStorage.getItem("cart") !== null) {
+        /* Pour que notre localStorage puisse être lu, il faut d'abord le 
+          transformer en objet JavaScript :  */
+        cartOfItem = JSON.parse(localStorage.getItem("cart"));
+
+        /* Nous vérifions lors de l'ajout d'un item si celui ci n'est pas similaire
+        à un item déjà présent dans notre tableau :  */
+        const foundProduct = cartOfItem.find(
+          (element) => element._id === item._id && element.color === item.color
+        );
+        if (foundProduct) {
+          /* Si la condition est vérifée alors on additionne la quantité de notre produit
+          similaire à celle de notre produit  : */
+          foundProduct.quantity += item.quantity;
+          localStorage.setItem("cart", JSON.stringify(cartOfItem));
+          //console.log(cartOfItem);
+        } else {
+          // Si notre localStorage est non-null mais que nous devons mettre un autre produit :
+          cartOfItem.push(item);
+          localStorage.setItem("cart", JSON.stringify(cartOfItem));
+          //console.log(cartOfItem);
+        }
+      } else {
+        // Si aucune donnée n'est présente dans notre localStorage :
+        cartOfItem = [];
+        cartOfItem.push(item);
+        localStorage.setItem("cart", JSON.stringify(cartOfItem));
+        //console.log(cartOfItem);
+      }
+    } else {
+      alert("La quantité et / ou la couleur ne sont pas correcte");
     }
   });
 }
 
 getProduct();
+addItemToCart();
