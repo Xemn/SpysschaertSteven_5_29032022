@@ -4,6 +4,10 @@ let cartOfItem = JSON.parse(localStorage.getItem("cart"));
 // URL de notre API :
 const url = "http://localhost:3000/api/products";
 
+let totalCostOfItem = 0;
+let totalCost = 0;
+let totalQuantity = 0;
+
 function displayCart() {
   // Si notre localStorage n'est pas vide :
   if (cartOfItem !== null) {
@@ -44,6 +48,12 @@ function displayCart() {
           imgContainer.appendChild(imgProduct);
           productName.textContent = `${product.name}`;
           productUnitPrice.textContent = `${product.price}`;
+          // Calcule du prix total pour un seul type d'article
+          totalCostOfItem = product.price * item.quantity;
+          //console.log(totalCostOfItem);
+          totalCost = totalCostOfItem + totalCost;
+          //console.log(totalCost);
+          document.getElementById("totalPrice").textContent = totalCost;
         })
         .catch(function (err) {
           alert("Un problème est survenu");
@@ -121,6 +131,9 @@ function displayCart() {
       /* Enfin on ajoute notre élément article dans notre 
       balise section : */
       document.getElementById("cart__items").appendChild(article);
+      // On affiche le nombre total d'article :
+      totalQuantity = item.quantity + totalQuantity;
+      document.getElementById("totalQuantity").textContent = totalQuantity;
     }
   } else {
     // Si notre localStorage est vide on affiche un message le signalant :
