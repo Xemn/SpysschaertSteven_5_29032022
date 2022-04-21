@@ -8,6 +8,7 @@ let totalCostOfItem = 0;
 let totalCost = 0;
 let totalQuantity = 0;
 
+// Afficher les éléments de notre panier :
 function displayCart() {
   // Si notre localStorage n'est pas vide :
   if (cartOfItem !== null) {
@@ -142,5 +143,63 @@ function displayCart() {
     document.getElementById("cart__items").appendChild(emptyCart);
   }
 }
+// function displayTotal(){}
 
+// Supprimer l'élément que l'on souhaite de notre panier :
+function removeItem() {
+  // On récupère tous les boutons delete (récupérer sous forme d'array) :
+  const deleteButton = document.getElementsByClassName("deleteItem");
+  // On boucle dans notre tableau de boutons :
+  for (let i = 0; i < deleteButton.length; i++) {
+    /* On récupère l'ancêtre le plus proche étant une balise article pour
+    chacun des boutons : */
+    const article = deleteButton[i].closest("article");
+    // On récupère la valeur des data-id et -color de chaque ancêtre article :
+    const deleteID = article.getAttribute("data-id");
+    const deleteColor = article.getAttribute("data-color");
+
+    // On écoute le clique sur un chaque bouton :
+    deleteButton[i].addEventListener("click", function (event) {
+      // Suppression du comportement par défaut du bouton :
+      event.preventDefault();
+
+      /* On met à jour notre array cartOfItem en ne récupérant que les éléments
+      ayant un id différent de la valeur de deleteID ou deleteColor :  */
+      cartOfItem = cartOfItem.filter(
+        (element) => element._id !== deleteID || element.color !== deleteColor
+      );
+
+      // On insère dans le localStorage notre array mis à jour :
+      localStorage.setItem("cart", JSON.stringify(cartOfItem));
+      // Si notre array est vide alors nous supprimons notre localStorage :
+      if (cartOfItem.length == 0) {
+        window.localStorage.removeItem("cart");
+      }
+
+      // On supprime enfin l'article contenant le bouton sur lequel on clique :
+      article.remove();
+    });
+  }
+}
+
+// Fonction qui nous permet de changer la quantité d'un produit dans le panier :
+function changeQuantity() {
+  // Nous récupérons tous l'input itemQuantity de chaque item du panier :
+  const inputQuantity = document.querySelectorAll(".itemQuantity");
+  // On boucle dans notre tableau d'input :
+  for (let i = 0; i < inputQuantity.length; i++) {
+    // On écoute le changement sur chaque input de notre tableau :
+    inputQuantity[i].addEventListener("change", function (event) {
+      /*On récupère la nouvelle valeur de l'input sur lequel le changement 
+      à eu lieu et on modifie la quantité de notre item dans notre panier :  */
+      cartOfItem[i].quantity = parseInt(event.target.value);
+      // On met à jour notre localStorage :
+      localStorage.setItem("cart", JSON.stringify(cartOfItem));
+    });
+  }
+}
+
+// Appel de nos différentes fonctions :
 displayCart();
+removeItem();
+changeQuantity();
