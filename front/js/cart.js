@@ -7,7 +7,8 @@ const url = "http://localhost:3000/api/products";
 let totalCostOfItem = 0;
 let totalCost = 0;
 let totalQuantity = 0;
-
+let price = 0;
+let quantity = 0;
 // Afficher les éléments de notre panier :
 function displayCart() {
   // Si notre localStorage n'est pas vide :
@@ -55,6 +56,8 @@ function displayCart() {
           totalCost = totalCostOfItem + totalCost;
           //console.log(totalCost);
           document.getElementById("totalPrice").textContent = totalCost;
+
+          price = product.price;
         })
         .catch(function (err) {
           alert("Un problème est survenu");
@@ -143,7 +146,19 @@ function displayCart() {
     document.getElementById("cart__items").appendChild(emptyCart);
   }
 }
-// function displayTotal(){}
+
+// Fonction qui (Re)calcule et affiche la quantité totale de produit et le prix total :
+function updateQuantityPrice() {
+  let quantity = 0;
+  let total = 0;
+
+  for (let item of cartOfItem) {
+    quantity += parseInt(item.quantity);
+    total += parseFloat(price) * parseInt(item.quantity);
+  }
+  document.getElementById("totalQuantity").innerHTML = quantity;
+  document.getElementById("totalPrice").innerHTML = total;
+}
 
 // Supprimer l'élément que l'on souhaite de notre panier :
 function removeItem() {
@@ -174,10 +189,14 @@ function removeItem() {
       // Si notre array est vide alors nous supprimons notre localStorage :
       if (cartOfItem.length == 0) {
         window.localStorage.removeItem("cart");
+        const emptyCart = document.createElement("p");
+        emptyCart.textContent = "Votre panier est vide";
+        document.getElementById("cart__items").appendChild(emptyCart);
       }
 
       // On supprime enfin l'article contenant le bouton sur lequel on clique :
       article.remove();
+      updateQuantityPrice();
     });
   }
 }
@@ -188,18 +207,179 @@ function changeQuantity() {
   const inputQuantity = document.querySelectorAll(".itemQuantity");
   // On boucle dans notre tableau d'input :
   for (let i = 0; i < inputQuantity.length; i++) {
+    const article = inputQuantity[i].closest("article");
+    const dataID = article.getAttribute("data-id");
+    const dataColor = article.getAttribute("data-color");
+    let foundProduct = cartOfItem.find(
+      (element) => element._id == dataID && element.color == dataColor
+    );
     // On écoute le changement sur chaque input de notre tableau :
     inputQuantity[i].addEventListener("change", function (event) {
       /*On récupère la nouvelle valeur de l'input sur lequel le changement 
       à eu lieu et on modifie la quantité de notre item dans notre panier :  */
-      cartOfItem[i].quantity = parseInt(event.target.value);
+      foundProduct.quantity = parseInt(event.target.value);
       // On met à jour notre localStorage :
       localStorage.setItem("cart", JSON.stringify(cartOfItem));
+      updateQuantityPrice();
     });
   }
+}
+
+function postForm() {
+  /* Dans un premier temps nous allons récupérer les différentes balises de notre
+  formualaire :  */
+
+  const inputFirstName = document.getElementById("firstName");
+  const inputLastName = document.getElementById("lastName");
+  const inputAddress = document.getElementById("address");
+  const inputCity = document.getElementById("city");
+  const inputEmail = document.getElementById("email");
+  const submitButton = document.getElementById("order");
+  // Variable boolééne qui sera notre indicateur de validité :
+  let validForm = false;
+  // Nos Regex :
+  const regexName = new RegExp("^[a-zA-Z ,.'-]+$");
+  const emailRegExp = new RegExp("[a-z0-9]+@[a-z]+.[a-z]{2,3}");
+
+  /* Vérifications des champs :  */
+
+  const validFirstName = function (inputFirstName) {
+    const firstNameErrorMessage = document.getElementById("firstNameErrorMsg");
+    if (inputFirstName.value === "") {
+      firstNameErrorMessage.textContent = "Veuillez renseigner ce champ.";
+    } else if (!regexName.test(inputFirstName.value)) {
+      firstNameErrorMessage.textContent = "Ceci n'est pas un prénom valide.";
+    } else {
+      validForm = true;
+    }
+  };
+
+  const validLastName = function (inputLastName) {
+    const lastNameErrorMessage = document.getElementById("lastNameErrorMsg");
+    if (inputLastName.value === "") {
+      lastNameErrorMessage.textContent = "Veuillez renseigner ce champ.";
+    } else if (!regexName.test(inputLastName.value)) {
+      lastNameErrorMessage.textContent = "Ceci n'est pas un nom valide";
+    } else {
+      validForm = true;
+    }
+  };
+
+  const validAddress = function (inputAddress) {
+    const addressErrorMessage = document.getElementById("addressErrorMsg");
+    if (inputAddress.value === "") {
+      addressErrorMessage.textContent = "Veuillez renseigner ce champ.";
+    } else {
+      validForm = true;
+    }
+  };
+
+  const validCity = function (inputCity) {
+    const cityErrorMessage = document.getElementById("cityErrorMsg");
+    if (inputCity.value === "") {
+      cityErrorMessage.textContent = "Veuillez renseigner ce champ.";
+    } else if (!regexName.test(inputCity.value)) {
+      cityErrorMessage.textContent = "Ceci n'est pas une ville valide.";
+    } else {
+      validForm = true;
+    }
+  };
+
+  const validEmail = function (inputEmail) {
+    const emailErrorMessage = document.getElementById("emailErrorMsg");
+    if (inputEmail.value === "") {
+      emailErrorMessage.textContent = "Veuillez renseigner ce champ.";
+    } else if (!emailRegExp.test(inputEmail.value)) {
+      emailErrorMessage.textContent = "Cette adresse email n'est pas valide.";
+    } else {
+      validForm = true;
+    }
+  };
+
+  // On écoute maintenant chaque changement sur nos champs :
+
+  inputFirstName.addEventListener("change", function () {
+    validFirstName(inputFirstName);
+  });
+
+  inputLastName.addEventListener("change", function () {
+    validLastName(inputLastName);
+  });
+
+  inputAddress.addEventListener("change", function () {
+    validAddress(inputAddress);
+  });
+
+  inputCity.addEventListener("change", function () {
+    validCity(inputCity);
+  });
+
+  inputEmail.addEventListener("change", function () {
+    validEmail(inputEmail);
+  });
+
+  // On écoute le clique sur le bouton présent dans notre formulaire :
+  submitButton.addEventListener("click", function () {
+    //event.preventDefault();
+    // Si tout les champs sont valides :
+    if (validForm && localStorage.getItem("cart") !== null) {
+      /* On crée un tableau reprenant les articles de notre 
+      localStorage : */
+      const cart = [];
+      for (let i = 0; i < cartOfItem.length; i++) {
+        cart.push(cartOfItem[i]._id);
+      }
+      console.log(cart);
+      /* Nous crééons un objet commande, qui reprend les 
+      informations utilisateurs et son panier :  */
+      const order = {
+        contact: {
+          firstname: inputFirstName.value,
+          lastName: inputLastName.value,
+          address: inputAddress.value,
+          city: inputCity.value,
+          email: inputEmail.value,
+        },
+        cart: cart,
+      };
+      console.log(order);
+      /* On communique avec notre API, avec une requête POST cette
+      fois afin de pouvoir passer commande : */
+      fetch(url + "/order", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(order),
+      })
+        .then(function (res) {
+          if (res.ok) {
+            return res.json();
+          }
+        })
+        .then(function (data) {
+          // On vide en premier lieu le localStorage de notre panier :
+          localStorage.clear();
+          // On redirige vers la page confirmation avec dans notyre url l'id de notre commande :
+          document.location.href = "confirmation.html?id=" + data.orderId;
+        })
+        .catch(function (error) {
+          alert("Une erreur s'est produite");
+        });
+      // Sinon on reverifie les champs :
+    } else {
+      validFirstName(inputFirstName.value);
+      validLastName(inputLastName.value);
+      validAddress(inputAddress.value);
+      validCity(inputCity.value);
+      validEmail(inputEmail.value);
+    }
+  });
 }
 
 // Appel de nos différentes fonctions :
 displayCart();
 removeItem();
 changeQuantity();
+postForm();
